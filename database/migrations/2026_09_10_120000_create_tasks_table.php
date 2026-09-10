@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->string('title');           // název úkolu
-            $table->boolean('done')->default(false); // splněno / nesplněno
-            $table->timestamps();              // created_at, updated_at
+            $table->string('title');   // název úkolu
+            $table->timestamps();      // created_at, updated_at
         });
     }
 

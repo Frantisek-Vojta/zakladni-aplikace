@@ -12,13 +12,13 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::orderBy('done')->latest()->get();
+        $tasks = Task::latest()->get();
 
         return view('tasks.index', ['tasks' => $tasks]);
     }
 
     /**
-     * Uloží nový úkol.
+     * Uloží nový úkol a vrátí zpět na seznam.
      */
     public function store(Request $request)
     {
@@ -28,26 +28,6 @@ class TaskController extends Controller
 
         Task::create($data);
 
-        return redirect()->route('tasks.index')->with('status', 'Úkol byl přidán.');
-    }
-
-    /**
-     * Přepne úkol mezi splněno / nesplněno.
-     */
-    public function toggle(Task $task)
-    {
-        $task->update(['done' => ! $task->done]);
-
         return redirect()->route('tasks.index');
-    }
-
-    /**
-     * Smaže úkol.
-     */
-    public function destroy(Task $task)
-    {
-        $task->delete();
-
-        return redirect()->route('tasks.index')->with('status', 'Úkol byl smazán.');
     }
 }
