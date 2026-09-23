@@ -1,34 +1,36 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Seznam úkolů</title>
-    <style>
-        body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
-        h1 { font-size: 22px; }
-        form { display: flex; gap: 8px; margin: 16px 0; }
-        input[type=text] { flex: 1; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-        button { padding: 8px 14px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; font-size: 14px; }
-        ul { list-style: none; padding: 0; }
-        li { padding: 10px 0; border-bottom: 1px solid #eee; }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
+
+@section('title', 'Seznam úkolů')
+
+@section('content')
     <h1>Seznam úkolů</h1>
 
-    <form method="POST" action="{{ route('tasks.store') }}">
+    <form class="add" method="POST" action="{{ route('tasks.store') }}">
         @csrf
         <input type="text" name="title" placeholder="Nový úkol…" autofocus>
         <button type="submit">Přidat</button>
     </form>
+    @error('title') <p class="error">{{ $message }}</p> @enderror
 
     <ul>
         @forelse ($tasks as $task)
-            <li>{{ $task->title }}</li>
+            <li>
+                <span class="text {{ $task->is_done ? 'done' : '' }}">{{ $task->title }}</span>
+
+                <form method="POST" action="{{ route('tasks.toggle', $task) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button class="small" type="submit">{{ $task->is_done ? 'Vrátit' : 'Hotovo' }}</button>
+                </form>
+
+                <form method="POST" action="{{ route('tasks.destroy', $task) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button class="small danger" type="submit">Smazat</button>
+                </form>
+            </li>
         @empty
-            <li>Zatím žádné úkoly.</li>
+            <li class="muted">Zatím žádné úkoly.</li>
         @endforelse
     </ul>
-</body>
-</html>
+@endsection

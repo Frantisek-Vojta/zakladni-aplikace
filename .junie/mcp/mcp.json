@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/usr/bin/php",
+            "args": [
+                "/home/frantisek-vojta/development/skola/laravel/zakladni-aplikace/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
