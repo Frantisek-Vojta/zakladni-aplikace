@@ -5,7 +5,12 @@
 @section('content')
     <h1>Knihy</h1>
 
-    {{-- Filtr podle nazvu nebo autora (GET, aby se dal odkaz nasdilet) --}}
+    {{--
+        FILTR. Pouziva metodu GET (ne POST), takze se hledany text objevi
+        v adrese: /books?search=Tolkien. Vyhoda: odkaz se da poslat nebo
+        ulozit do zalozek a filtr se znovu pouzije.
+        GET formular nepotrebuje @csrf - nic nemeni, jen cte.
+    --}}
     <form class="add" method="GET" action="{{ route('books.index') }}">
         <input type="text" name="search" placeholder="Hledat podle názvu nebo autora" value="{{ $search }}">
         <button type="submit">Hledat</button>
@@ -24,6 +29,7 @@
             <th>Dostupné</th>
             <th></th>
         </tr>
+        {{-- @forelse = cyklus, ktery umi i variantu "kdyz je seznam prazdny" (@empty) --}}
         @forelse ($books as $book)
             <tr>
                 <td><a href="{{ route('books.show', $book) }}">{{ $book->title }}</a></td>

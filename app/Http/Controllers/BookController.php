@@ -9,18 +9,33 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * KONTROLER KNIH - kompletni CRUD
+ *
+ * CRUD = Create (create + store), Read (index + show),
+ *        Update (edit + update), Delete (destroy).
+ *
+ * Proc dve metody na jednu vec? Jedna zobrazi formular (GET),
+ * druha zpracuje odeslana data (POST/PUT). Formular a jeho ulozeni
+ * jsou dva samostatne pozadavky z prohlizece.
+ */
 class BookController extends Controller
 {
     /**
-     * seznam knih + filtr podle nazvu nebo autora
+     * READ - seznam knih + filtr podle nazvu nebo autora
      */
     public function index(Request $request): View
     {
+        // z adresy /books?search=Tolkien vytahneme hledany text
         $search = $request->query('search');
 
         $books = Book::query()
-            // filtrujeme jen kdyz uzivatel neco napsal do vyhledavaciho policka
+            // when() = "pridej tuto cast dotazu jen kdyz je podminka splnena".
+            // Kdyz uzivatel nic nehleda ($search je null), filtr se vubec
+            // nepouzije a vypisou se vsechny knihy.
             ->when($search, function ($query) use ($search) {
+                // where ... orWhere = staci, aby text sedel v nazvu NEBO u autora
+                // like s % okolo = "obsahuje", ne "presne se rovna"
                 $query->where('title', 'like', "%{$search}%")
                     ->orWhere('author', 'like', "%{$search}%");
             })
@@ -29,12 +44,13 @@ class BookController extends Controller
 
         return view('books.index', [
             'books' => $books,
+            // posilame i hledany text, aby zustal napsany v policku
             'search' => $search,
         ]);
     }
 
     /**
-     * formular pro novou knihu
+     * CREATE (1/2) - jen zobrazi prazdny formular
      */
     public function create(): View
     {
@@ -42,34 +58,49 @@ class BookController extends Controller
     }
 
     /**
-     * ulozi novou knihu
+     * CREATE (2/2) - ulozi novou knihu
      */
     public function store(Request $request): RedirectResponse
     {
+        // validate() pri chybe sam prerusi beh metody, vrati uzivatele
+        // zpet na formular a do sablony posle chybove zpravy.
+        // Dal se tedy dostaneme jen kdyz jsou data v poradku.
         $data = $request->validate($this->rules());
 
         Book::create($data);
 
+        // po ulozeni presmerujeme (ne return view!), aby uzivatel pri
+        // obnoveni stranky neposlal formular podruhe
         return redirect()->route('books.index');
     }
 
     /**
-     * detail knihy se seznamem vypujcek
+     * READ - detail knihy se seznamem jejich vypujcek
+     *
+     * Book $book v parametru = "route model binding": v adrese je /books/3,
+     * Laravel sam najde knihu s id 3 a podstrci ji sem. Kdyz neexistuje,
+     * vrati automaticky chybu 404.
      */
     public function show(Book $book): View
     {
-        // nacteme vypujcky i se ctenari (aby se nedelal dotaz do DB pro kazdy radek)
-        $loans = $book->loans()->with('reader')->orderByDesc('borrowed_at')->get();
+        $loans = $book->loans()
+            // with('reader') resi problem N+1 dotazu: bez toho by se pro
+            // KAZDOU vypujcku delal zvlastni dotaz na jejiho ctenare.
+            // Takhle se nactou vsichni ctenari jednim dotazem navic.
+            ->with('reader')
+            ->orderByDesc('borrowed_at')
+            ->get();
 
         return view('books.show', [
             'book' => $book,
             'loans' => $loans,
+            // ctenare posilame do rozbalovaciho seznamu ve formulari vypujcky
             'readers' => Reader::orderBy('name')->get(),
         ]);
     }
 
     /**
-     * formular pro upravu knihy
+     * UPDATE (1/2) - formular predplneny soucasnymi hodnotami
      */
     public function edit(Book $book): View
     {
@@ -77,11 +108,12 @@ class BookController extends Controller
     }
 
     /**
-     * ulozi upravenou knihu
+     * UPDATE (2/2) - ulozi zmeny
      */
     public function update(Request $request, Book $book): RedirectResponse
     {
-        // pri uprave musime z kontroly jedinecnosti vynechat knihu samotnou
+        // knihu predame do rules(), aby si pri kontrole jedinecnosti ISBN
+        // "nestezovala sama na sebe" - viz komentar v rules()
         $data = $request->validate($this->rules($book));
 
         $book->update($data);
@@ -90,7 +122,10 @@ class BookController extends Controller
     }
 
     /**
-     * smaze knihu (i s jejimi vypujckami)
+     * DELETE - smaze knihu
+     *
+     * Vypujcky teto knihy se smazou samy diky cascadeOnDelete()
+     * nastavenemu v migraci tabulky loans.
      */
     public function destroy(Book $book): RedirectResponse
     {
@@ -100,17 +135,28 @@ class BookController extends Controller
     }
 
     /**
-     * Validacni pravidla pro knihu.
-     * $book je vyplnene jen pri uprave - pak se jeho ISBN pri kontrole jedinecnosti ignoruje.
+     * VALIDACNI PRAVIDLA PRO KNIHU
+     *
+     * Jsou v jedne metode, aby se neopakovala ve store() i update()
+     * (kdyz se pravidlo zmeni, menim ho na jednom miste).
+     *
+     * $book je vyplnene jen pri uprave, pri zakladani nove knihy je null.
      */
     private function rules(?Book $book = null): array
     {
         return [
             'title' => ['required', 'string', 'max:255'],
             'author' => ['required', 'string', 'max:255'],
-            // ISBN je jedinecne a ma presne 13 znaku
+
+            // ZADANI: ISBN je jedinecne a ma 13 znaku
+            //   size:13 = presne 13 znaku (ne min, ne max)
+            //   unique  = v tabulce books nesmi byt stejne ISBN dvakrat
+            //   ->ignore($book) = pri UPRAVE vynech z kontroly knihu samotnou.
+            //     Bez toho by sla kniha ulozit jen po zmene ISBN - jeji vlastni
+            //     ISBN uz je totiz v tabulce a unique by ho oznacil za duplikat.
             'isbn' => ['required', 'string', 'size:13', Rule::unique('books', 'isbn')->ignore($book)],
-            // pocet vytisku je cele cislo, nejmene 0
+
+            // ZADANI: available_copies je cele cislo nejmene 0
             'available_copies' => ['required', 'integer', 'min:0'],
         ];
     }

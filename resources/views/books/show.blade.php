@@ -15,6 +15,12 @@
 
     <h2>Nová výpůjčka</h2>
 
+    {{--
+        Formular na pujceni se zobrazi jen kdyz to ma smysl:
+        nejdriv musi existovat ctenar a kniha musi mit dostupny vytisk.
+        Je to jen pohodli pro uzivatele - skutecnou kontrolu dela
+        LoanController::store(), protoze sablone nelze verit.
+    --}}
     @if ($readers->isEmpty())
         <p class="muted">Nejdřív přidej čtenáře na stránce <a href="{{ route('readers.index') }}">Čtenáři</a>.</p>
     @elseif (! $book->isAvailable())
@@ -22,7 +28,12 @@
     @else
         <form class="stack" method="POST" action="{{ route('loans.store') }}">
             @csrf
-            {{-- knihu posilame skryte, uz vime o kterou jde --}}
+            {{--
+                Knihu posilame skrytym polickem - uz vime, o kterou jde,
+                takze ji uzivatel nevybira. Server si ji presto overuje
+                (pravidlo exists:books,id), protoze skryte policko se da
+                v prohlizeci prepsat. Nikdy neverit datum z formulare!
+            --}}
             <input type="hidden" name="book_id" value="{{ $book->id }}">
 
             <label>
@@ -69,6 +80,7 @@
                 <td>{{ $loan->borrowed_at->format('d.m.Y') }}</td>
                 <td>{{ $loan->due_at->format('d.m.Y') }}</td>
                 <td>
+                    {{-- Stav vypujcky se dopocitava, v databazi zadny sloupec "stav" neni --}}
                     @if ($loan->returned_at)
                         <span class="badge returned">Vráceno {{ $loan->returned_at->format('d.m.Y') }}</span>
                     @elseif ($loan->isOverdue())

@@ -7,10 +7,21 @@
 
     <form class="stack" method="POST" action="{{ route('books.update', $book) }}">
         @csrf
+        {{--
+            @method('PUT') - HTML formular umi poslat jen GET a POST.
+            Tahle direktiva prida skryte policko _method=PUT a Laravel se
+            pak k pozadavku chova, jako by prisel metodou PUT. Diky tomu
+            muzeme mit routu Route::put(...) podle pravidel REST.
+        --}}
         @method('PUT')
 
         <label>
             Název
+            {{--
+                old('title', $book->title) = dva parametry:
+                  1. co uzivatel napsal (kdyz se formular vratil s chybou)
+                  2. soucasna hodnota z databaze (kdyz formular otevira poprve)
+            --}}
             <input type="text" name="title" value="{{ old('title', $book->title) }}" autofocus>
         </label>
         @error('title') <p class="error">{{ $message }}</p> @enderror

@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('readers', function (Blueprint $table) {
             $table->id();
             $table->string('name');            // jmeno a prijmeni ctenare
+
+            // unique() = dva ctenari nemuzou mit stejny e-mail
             $table->string('email')->unique(); // e-mail
         });
     }

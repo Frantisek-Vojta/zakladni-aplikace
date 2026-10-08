@@ -6,12 +6,25 @@
     <h1>Nová kniha</h1>
 
     <form class="stack" method="POST" action="{{ route('books.store') }}">
+        {{--
+            @csrf vlozi do formulare skryty bezpecnostni token.
+            Chrani pred utokem CSRF: bez nej by cizi web mohl podstrcit
+            formular, ktery by za prihlaseneho uzivatele neco ulozil.
+            Laravel token kontroluje u kazdeho POST/PUT/PATCH/DELETE -
+            kdyz chybi, vrati chybu 419.
+        --}}
         @csrf
 
         <label>
             Název
+            {{--
+                old('title') vrati to, co uzivatel naposledy napsal.
+                Vyuzije se kdyz validace neprojde - formular se vrati
+                vyplneny a uzivatel nemusi psat vsechno znovu.
+            --}}
             <input type="text" name="title" value="{{ old('title') }}" autofocus>
         </label>
+        {{-- @error vypise chybu validace pro dane policko (sem ji posila validate()) --}}
         @error('title') <p class="error">{{ $message }}</p> @enderror
 
         <label>

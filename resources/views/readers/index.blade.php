@@ -22,6 +22,7 @@
                 <span class="text">
                     {{ $reader->name }}
                     <span class="muted">({{ $reader->email }})</span>
+                    {{-- active_loans_count pocita withCount() v ReaderController::index() --}}
                     @if ($reader->active_loans_count > 0)
                         <span class="badge">půjčeno: {{ $reader->active_loans_count }}</span>
                     @endif

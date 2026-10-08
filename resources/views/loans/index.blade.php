@@ -5,6 +5,8 @@
 @section('content')
     <h1>Výpůjčky</h1>
 
+    {{-- Tuhle sekci chtelo zadani: prehled vypujcek po terminu.
+         Data pripravuje scope Loan::overdue() (nevracene + termin uplynul). --}}
     <h2>Po termínu ({{ $overdueLoans->count() }})</h2>
 
     <table>
@@ -62,6 +64,8 @@
                 </td>
                 <td>
                     @if ($loan->isActive())
+                        {{-- Tlacitko "Vratit" je formular, ne odkaz: meni data,
+                             a to se podle pravidel nesmi delat metodou GET --}}
                         <form method="POST" action="{{ route('loans.return', $loan) }}">
                             @csrf
                             @method('PATCH')
