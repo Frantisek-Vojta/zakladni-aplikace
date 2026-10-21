@@ -35,6 +35,15 @@
         .badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; }
         .badge.overdue { background: #fee2e2; color: #b91c1c; }
         .badge.returned { background: #dcfce7; color: #166534; }
+        /* barevne odliseni stavu zarizeni (nazvy trid vraci Equipment::statusClass()) */
+        .badge.status-active { background: #dcfce7; color: #166534; }   /* zelena - v provozu */
+        .badge.status-service { background: #fef3c7; color: #92400e; }  /* oranzova - v servisu */
+        .badge.status-retired { background: #e5e7eb; color: #4b5563; }  /* seda - vyrazeno */
+        .filters { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+        .filters a { font-size: 14px; padding: 4px 10px; border-radius: 10px; background: #f3f4f6; text-decoration: none; }
+        .filters a.on { background: #2563eb; color: #fff; }
+        .total { font-size: 17px; font-weight: 600; }
+        td.num, th.num { text-align: right; }
     </style>
 </head>
 <body>
@@ -42,6 +51,7 @@
         <a href="{{ route('books.index') }}" class="{{ request()->routeIs('books.*') ? 'active' : '' }}">Knihy</a>
         <a href="{{ route('readers.index') }}" class="{{ request()->routeIs('readers.*') ? 'active' : '' }}">Čtenáři</a>
         <a href="{{ route('loans.index') }}" class="{{ request()->routeIs('loans.*') ? 'active' : '' }}">Výpůjčky</a>
+        <a href="{{ route('equipment.index') }}" class="{{ request()->routeIs('equipment.*') || request()->routeIs('service-records.*') ? 'active' : '' }}">Technika</a>
         <a href="{{ route('tasks.index') }}" class="{{ request()->routeIs('tasks.*') ? 'active' : '' }}">Úkoly</a>
         <a href="{{ route('students.index') }}" class="{{ request()->routeIs('students.*') ? 'active' : '' }}">Studenti</a>
     </nav>

@@ -174,6 +174,22 @@ class LoanTest extends TestCase
         $this->get(route('loans.index'))->assertOk()->assertSee('Pozdní Čtenář')->assertSee('Po termínu (1)');
     }
 
+    /**
+     * Vypujcka s terminem na DNESEK jeste po terminu neni - ctenar ma na
+     * vraceni cely den. Test hlida, ze to stejne vidi metoda isOverdue()
+     * (odznak u radku) i scope overdue() (sekce "Po terminu").
+     */
+    public function test_loan_due_today_is_not_overdue_yet(): void
+    {
+        $loan = Loan::create($this->loanData($this->book(), $this->reader(), [
+            'borrowed_at' => now()->subDays(5),
+            'due_at' => now(),
+        ]));
+
+        $this->assertFalse($loan->isOverdue());
+        $this->assertSame(0, Loan::overdue()->count());
+    }
+
     public function test_returned_loan_is_not_overdue(): void
     {
         $loan = Loan::create($this->loanData($this->book(), $this->reader(), [

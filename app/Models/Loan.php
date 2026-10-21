@@ -87,10 +87,16 @@ class Loan extends Model
      * Musi platit oboji: jeste neni vracena A termin uz uplynul.
      * Pozor na druhou podminku samotnou - vracena kniha uz po terminu neni,
      * i kdyby ji ctenar vratil pozde.
+     *
+     * Proc startOfDay() a ne isPast()? due_at je datum, takze Laravel z nej
+     * udela "dnes 00:00". isPast() by tedy u knihy s terminem na DNESEK vratilo
+     * true uz minutu po pulnoci, i kdyz ctenar ma na vraceni cely den.
+     * Takhle je vypujcka po terminu teprve od dalsiho dne - stejne, jako to
+     * pocita scope overdue() nize (ten porovnava jen datumy).
      */
     public function isOverdue(): bool
     {
-        return $this->isActive() && $this->due_at->isPast();
+        return $this->isActive() && $this->due_at->lt(now()->startOfDay());
     }
 
     /**

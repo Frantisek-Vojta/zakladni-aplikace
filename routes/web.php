@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReaderController;
+use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +46,28 @@ Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
 Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
 // patch = zmena jedne veci u existujiciho zaznamu (zapis datumu vraceni)
 Route::patch('/loans/{loan}/return', [LoanController::class, 'returnBook'])->name('loans.return');
+
+/*
+ * EVIDENCE TECHNIKY A SERVISNICH ZASAHU
+ */
+
+// Export servisni historie do CSV.
+// Musi byt DRIV nez Route::resource, jinak by se /equipment/{equipment}
+// chytilo prvni a slovo "export" by Laravel bral jako id zarizeni.
+Route::get('/equipment/{equipment}/export', [ServiceRecordController::class, 'export'])
+    ->name('equipment.export');
+
+// Route::resource vyrobi jednim radkem vsech 7 standardnich rout
+// (index, create, store, show, edit, update, destroy) vcetne jejich nazvu
+// equipment.index, equipment.create, ... Vypis rout: php artisan route:list
+Route::resource('equipment', EquipmentController::class);
+
+// Servisni zaznamy - pridavaji se z detailu zarizeni, proto je zarizeni
+// soucasti adresy a ne formulare
+Route::post('/equipment/{equipment}/service-records', [ServiceRecordController::class, 'store'])
+    ->name('service-records.store');
+Route::delete('/service-records/{serviceRecord}', [ServiceRecordController::class, 'destroy'])
+    ->name('service-records.destroy');
 
 // Seznam úkolů
 Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
