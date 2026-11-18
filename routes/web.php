@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\StudentController;
@@ -79,3 +82,19 @@ Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.
 Route::get('/students', [StudentController::class, 'index'])->name('students.index');
 Route::post('/students', [StudentController::class, 'store'])->name('students.store');
 Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+
+/*
+ * KURZY A PRIHLASOVANI UCASTNIKU
+ */
+
+// Kurzy i ucastnici maji plny CRUD, Route::resource proto vyrobi vsech
+// sedm standardnich rout jednim radkem (viz komentar u equipment vyse).
+Route::resource('courses', CourseController::class);
+Route::resource('participants', ParticipantController::class);
+
+// Prihlasky - prihlaseni se zaklada z detailu kurzu, proto je kurz
+// soucasti adresy a ne formulare (nejde ho tak podvrhnout skrytym polickem).
+Route::post('/courses/{course}/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
+// patch = zmena stavu existujici prihlasky (domaci prace: enrolled/cancelled/completed)
+Route::patch('/enrollments/{enrollment}/cancel', [EnrollmentController::class, 'cancel'])->name('enrollments.cancel');
+Route::patch('/enrollments/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('enrollments.complete');

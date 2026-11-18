@@ -39,6 +39,10 @@
         .badge.status-active { background: #dcfce7; color: #166534; }   /* zelena - v provozu */
         .badge.status-service { background: #fef3c7; color: #92400e; }  /* oranzova - v servisu */
         .badge.status-retired { background: #e5e7eb; color: #4b5563; }  /* seda - vyrazeno */
+        /* barevne odliseni stavu prihlasky (nazvy trid vraci Enrollment::statusClass()) */
+        .badge.status-enrolled { background: #dbeafe; color: #1d4ed8; }  /* modra - aktivne prihlasen */
+        .badge.status-cancelled { background: #fee2e2; color: #b91c1c; } /* cervena - zruseno */
+        .badge.status-completed { background: #dcfce7; color: #166534; } /* zelena - dokonceno */
         .filters { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
         .filters a { font-size: 14px; padding: 4px 10px; border-radius: 10px; background: #f3f4f6; text-decoration: none; }
         .filters a.on { background: #2563eb; color: #fff; }
@@ -54,6 +58,8 @@
         <a href="{{ route('equipment.index') }}" class="{{ request()->routeIs('equipment.*') || request()->routeIs('service-records.*') ? 'active' : '' }}">Technika</a>
         <a href="{{ route('tasks.index') }}" class="{{ request()->routeIs('tasks.*') ? 'active' : '' }}">Úkoly</a>
         <a href="{{ route('students.index') }}" class="{{ request()->routeIs('students.*') ? 'active' : '' }}">Studenti</a>
+        <a href="{{ route('courses.index') }}" class="{{ request()->routeIs('courses.*') ? 'active' : '' }}">Kurzy</a>
+        <a href="{{ route('participants.index') }}" class="{{ request()->routeIs('participants.*') ? 'active' : '' }}">Účastníci</a>
     </nav>
 
     @yield('content')
